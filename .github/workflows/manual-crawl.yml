@@ -1,0 +1,19 @@
+name: e-SIDIF full crawl
+on:
+  workflow_dispatch:
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install -e .
+      - run: playwright install --with-deps chromium
+      - run: python -m esidif_crawler crawl --download
+      - run: python -m esidif_crawler export
+      - uses: actions/upload-artifact@v4
+        with:
+          name: esidif-documents-${{ github.run_number }}
+          path: data/
+          retention-days: 14
