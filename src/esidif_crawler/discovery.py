@@ -13,9 +13,21 @@ def normalize_url(base: str, href: str) -> str | None:
         return None
     return absolute
 
-def is_allowed(url: str, allowed_hosts: list[str], prefixes: list[str]) -> bool:
+def is_allowed_page(url: str, allowed_hosts: list[str], prefixes: list[str]) -> bool:
     p = urlparse(url)
-    return p.hostname in allowed_hosts and any(p.path.startswith(x) for x in prefixes)
+    return p.hostname in allowed_hosts and any(
+        p.path.startswith(x) for x in prefixes
+    )
+
+
+def is_allowed_document(url: str, allowed_hosts: list[str]) -> bool:
+    p = urlparse(url)
+    return p.hostname in allowed_hosts
+
+
+def is_allowed(url: str, allowed_hosts: list[str], prefixes: list[str]) -> bool:
+    """Backward-compatible alias for page URL checks."""
+    return is_allowed_page(url, allowed_hosts, prefixes)
 
 def looks_like_document(url: str, extensions: list[str]) -> bool:
     path = urlparse(url).path.lower()
