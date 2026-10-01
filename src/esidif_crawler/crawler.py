@@ -75,6 +75,6 @@ class Crawler:
             anchor_text=anchor_text,module=module,
             mime_type=response.headers.get("content-type","").split(";")[0],
             extension=Path(filename).suffix.lower(),filename=filename,size_bytes=len(data),
-            sha256=digest,last_seen=datetime.utcnow(),status="downloaded",
+            sha256=digest,last_seen=datetime.now(timezone.utc),status="downloaded",
             local_path=str(destination)))
         return 1
