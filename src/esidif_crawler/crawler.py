@@ -1,4 +1,3 @@
-import asyncio
 from collections import deque
 from pathlib import Path
 from urllib.parse import urlparse
@@ -23,9 +22,6 @@ class Crawler:
         pages=documents=downloaded=0
         browser=None
         try:
-            if self.config.browser.enabled:
-                browser=BrowserFallback(self.config.crawler.user_agent,self.config.browser.timeout_ms,self.config.browser.headless)
-                await browser.__aenter__()
             while self.queue:
                 url,depth,source=self.queue.popleft()
                 if url in self.seen or depth>self.config.site.max_depth: continue
@@ -38,7 +34,10 @@ class Crawler:
                         continue
                     html=response.text
                 except Exception:
-                    if not browser: raise
+                    if not self.config.browser.enabled: raise
+                    if browser is None:
+                        browser=BrowserFallback(self.config.crawler.user_agent,self.config.browser.timeout_ms,self.config.browser.headless)
+                        await browser.__aenter__()
                     html=await browser.fetch_html(url)
 
                 pages+=1
