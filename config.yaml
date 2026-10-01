@@ -1,0 +1,25 @@
+site:
+  root_url: "https://www.argentina.gob.ar/economia/sechacienda/dgsiaf/e-sidif/"
+  allowed_hosts: ["www.argentina.gob.ar"]
+  allowed_path_prefixes: ["/economia/sechacienda/dgsiaf/e-sidif"]
+  max_depth: 12
+crawler:
+  user_agent: "esidif-document-crawler/0.1 (+https://github.com/fmonfasani/esidif-document-crawler)"
+  timeout_seconds: 30
+  max_retries: 4
+  concurrency: 4
+  delay_seconds: 0.5
+  respect_robots_txt: true
+browser:
+  enabled: true
+  headless: true
+  timeout_ms: 30000
+storage:
+  data_dir: "data"
+  database: "data/database/esidif.sqlite3"
+  documents_dir: "data/documents"
+  pages_dir: "data/pages"
+  manifests_dir: "data/manifests"
+discovery:
+  document_extensions: [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".csv", ".txt", ".zip", ".rar", ".7z", ".xml", ".json", ".jpg", ".jpeg", ".png", ".svg"]
+  max_document_size_mb: 250
