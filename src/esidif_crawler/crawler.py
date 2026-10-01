@@ -1,7 +1,7 @@
 from collections import deque
 from pathlib import Path
+from datetime import datetime, timezone
 from urllib.parse import urlparse
-from datetime import datetime
 from .config import Config
 from .discovery import extract_links, is_allowed_page, is_allowed_document, page_title, infer_module
 from .http import HttpClient, polite_delay
@@ -23,7 +23,7 @@ class Crawler:
         browser=None
         try:
             while self.queue:
-                url,depth,source=self.queue.popleft()
+                url,depth,_source=self.queue.popleft()
                 if url in self.seen or depth>self.config.site.max_depth: continue
                 if not is_allowed_page(url,self.config.site.allowed_hosts,self.config.site.allowed_path_prefixes): continue
                 self.seen.add(url); await polite_delay(self.config.crawler.delay_seconds)
@@ -54,7 +54,7 @@ class Crawler:
                             self.storage.upsert(DocumentRecord(
                                 url=link.url,canonical_url=link.url,source_url=url,title=title,
                                 anchor_text=link.anchor_text,module=module,status="discovered",
-                                last_seen=datetime.utcnow()))
+                                last_seen=datetime.now(timezone.utc)))
                     elif is_allowed_page(link.url,self.config.site.allowed_hosts,self.config.site.allowed_path_prefixes) and link.depth<=self.config.site.max_depth:
                         self.queue.append((link.url,link.depth,url))
             return {"pages":pages,"documents":documents,"downloaded":downloaded}
