@@ -1,7 +1,10 @@
 from pathlib import Path
-from urllib.parse import urljoin, urlparse, urldefrag
+from urllib.parse import urldefrag, urljoin, urlparse
+
 from bs4 import BeautifulSoup
+
 from .models import DiscoveredLink
+
 
 def normalize_url(base: str, href: str) -> str | None:
     if not href or href.startswith(("mailto:", "javascript:", "tel:", "#")):

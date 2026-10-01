@@ -1,13 +1,15 @@
 from collections import deque
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
 from urllib.parse import urlparse
+
+from .browser import BrowserFallback
 from .config import Config
-from .discovery import extract_links, is_allowed_page, is_allowed_document, page_title, infer_module
+from .discovery import extract_links, infer_module, is_allowed_document, is_allowed_page, page_title
 from .http import HttpClient, polite_delay
 from .models import DocumentRecord
 from .storage import Storage, sha256_bytes
-from .browser import BrowserFallback
+
 
 class Crawler:
     def __init__(self, config: Config, download: bool = False):
@@ -54,7 +56,7 @@ class Crawler:
                             self.storage.upsert(DocumentRecord(
                                 url=link.url,canonical_url=link.url,source_url=url,title=title,
                                 anchor_text=link.anchor_text,module=module,status="discovered",
-                                last_seen=datetime.now(timezone.utc)))
+                                last_seen=datetime.now(UTC)))
                     elif is_allowed_page(link.url,self.config.site.allowed_hosts,self.config.site.allowed_path_prefixes) and link.depth<=self.config.site.max_depth:
                         self.queue.append((link.url,link.depth,url))
             return {"pages":pages,"documents":documents,"downloaded":downloaded}
@@ -75,6 +77,6 @@ class Crawler:
             anchor_text=anchor_text,module=module,
             mime_type=response.headers.get("content-type","").split(";")[0],
             extension=Path(filename).suffix.lower(),filename=filename,size_bytes=len(data),
-            sha256=digest,last_seen=datetime.now(timezone.utc),status="downloaded",
+            sha256=digest,last_seen=datetime.now(UTC),status="downloaded",
             local_path=str(destination)))
         return 1

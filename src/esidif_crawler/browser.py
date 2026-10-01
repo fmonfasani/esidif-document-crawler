@@ -1,5 +1,6 @@
 from playwright.async_api import async_playwright
 
+
 class BrowserFallback:
     def __init__(self, user_agent: str, timeout_ms: int = 30000, headless: bool = True):
         self.user_agent=user_agent; self.timeout_ms=timeout_ms; self.headless=headless

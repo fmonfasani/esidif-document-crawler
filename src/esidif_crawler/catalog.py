@@ -3,11 +3,12 @@ from __future__ import annotations
 import csv
 import json
 import re
-from urllib.parse import unquote, urlparse
 import sqlite3
+import unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote, urlparse
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
@@ -49,10 +50,10 @@ def _decode_pdf_escapes(value: str) -> str:
 
 def _normalize_title(value: str | None) -> str:
     value = _decode_pdf_escapes(_clean(value))
-    value = re.sub(r"^\((?:Microsoft Word|Microsoft PowerPoint)\s*-\s*", "", value, flags=re.I)
+    value = re.sub(r"^\((?:Microsoft Word|Microsoft PowerPoint)\s*-\s*", "", value, flags=re.IGNORECASE)
     value = re.sub(r"\)\s*$", "", value)
-    value = re.sub(r"\s+Página\s+\d+\s+de\s+\d+\s*$", "", value, flags=re.I)
-    value = re.sub(r"\.(?:docx?|pptx?)\s*$", "", value, flags=re.I)
+    value = re.sub(r"\s+Página\s+\d+\s+de\s+\d+\s*$", "", value, flags=re.IGNORECASE)
+    value = re.sub(r"\.(?:docx?|pptx?)\s*$", "", value, flags=re.IGNORECASE)
     return _clean(value)
 
 def _title_is_good(value: str | None) -> bool:
@@ -71,31 +72,53 @@ def infer_section(source_url: str | None) -> str:
     return _SECTION_NAMES.get(slug, re.sub(r"[-_]+", " ", slug).capitalize())
 
 def infer_document_type(*values: str | None) -> str:
-    text = " ".join(_normalize_title(v) for v in values if v).casefold()
-    if re.search(r"\bgu[ií]a\b|gu[ií]a de ayuda|gu[ií]a para", text):
-        return "Guía"
-    if "manual" in text:
-        return "Manual"
+    def ascii_fold(value: str) -> str:
+        normalized = unicodedata.normalize("NFKD", value)
+        return "".join(
+            char for char in normalized if not unicodedata.combining(char)
+        ).casefold()
+
+    raw_text = " ".join(value or "" for value in values)
+    text = " ".join(
+        ascii_fold(_normalize_title(value))
+        for value in values
+        if value
+    )
+
+    raw_text_folded = ascii_fold(raw_text)
+
+    if "guia" in text or "manual" in text:
+        return "\u0047u\u00eda"
+
     if "procedimiento" in text:
         return "Procedimiento"
+
     if "instructivo" in text or "instructiva" in text:
         return "Instructivo"
+
     if "formulario" in text:
         return "Formulario"
-    if "presentación" in text or "presentacion" in text or ".ppt" in text:
-        return "Presentación"
-    if "documento técnico" in text or "documento tecnico" in text:
-        return "Documento técnico"
-    if "boletín" in text or "boletin" in text:
-        return "Boletín"
+
+    if "presentacion" in text or ".ppt" in raw_text_folded:
+        return "Presentaci\u00f3n"
+
+    if "documento tecnico" in text:
+        return "Documento t\u00e9cnico"
+
+    if "boletin" in text:
+        return "Bolet\u00edn"
+
     return "Otro"
+
 
 def infer_year(*values: str | None) -> int | None:
     for value in values:
-        match = re.search(r"\b((?:19|20)\d{2})\b", value or "")
+        text = value or ""
+        match = re.search(r"(?<!\d)((?:19|20)\d{2})(?!\d)", text)
         if match:
             return int(match.group(1))
     return None
+
 
 def title_quality(title: str, source: str) -> str:
     if source in {"first_page", "link_text"} and _title_is_good(title):

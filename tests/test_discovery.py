@@ -1,4 +1,5 @@
-from esidif_crawler.discovery import normalize_url, looks_like_document, extract_links
+from esidif_crawler.discovery import extract_links, looks_like_document, normalize_url
+
 
 def test_normalize_url():
     assert normalize_url("https://example.com/a/", "../b") == "https://example.com/b"

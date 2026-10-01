@@ -1,6 +1,8 @@
 from pathlib import Path
-from pydantic import BaseModel
+
 import yaml
+from pydantic import BaseModel
+
 
 class SiteConfig(BaseModel):
     root_url: str

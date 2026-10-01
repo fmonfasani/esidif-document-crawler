@@ -1,6 +1,8 @@
 import asyncio
+
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
+
 
 class HttpClient:
     def __init__(self, user_agent: str, timeout: float = 30):
