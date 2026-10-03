@@ -6,6 +6,8 @@ __pycache__/
 .env
 data/*
 !data/.gitkeep
+!data/analisis/
+!data/analisis/**
 *.sqlite3
 .DS_Store
 .vscode/
